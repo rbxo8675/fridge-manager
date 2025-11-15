@@ -150,7 +150,7 @@ function App() {
         </h1>
         
         <div className="header-section">
-          <h5>항목 목록</h5>
+         
           <button className="btn-add-new" onClick={() => setShowAddModal(true)}>
             <i className="ri-add-circle-line"></i> 새 항목 추가
           </button>
