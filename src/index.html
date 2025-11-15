@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>냉장고 관리 시스템 - AJAX CRUD with Modal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        h1 {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn-add-new {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .btn-add-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .modal-content {
+            border-radius: 12px !important;
+            background: white !important;
+            overflow: hidden !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+        .modal-header {
+            background: white !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 20px 24px !important;
+            margin: 0 !important;
+        }
+        .modal-header .modal-title {
+            font-size: 1.125rem !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+        }
+        .modal-header .modal-title i {
+            color: #667eea !important;
+        }
+        .modal-header .btn-close {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #64748b !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 6px !important;
+            opacity: 1 !important;
+        }
+        .modal-header .btn-close:hover {
+            background: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+        }
+        .modal-body {
+            background: white;
+            margin: 0;
+            padding: 24px;
+            max-height: calc(90vh - 140px);
+            overflow-y: auto;
+        }
+        .modal-body label {
+            color: #475569;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 6px;
+        }
+        .modal-footer {
+            padding: 16px 24px !important;
+            border-top: 1px solid #e2e8f0 !important;
+            background: #f8fafc !important;
+            margin: 0 !important;
+        }
+        .form-control, .form-select {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.875rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+    </style> -->
+</head>
+<body>
+    <div class="container py-4">
+        <h1><i class="ri-fridge-line"></i> 냉장고 관리 시스템 v3.0.0</h1>
+        
+        <div class="mb-4 d-flex justify-content-end align-items-center">
+            <button class="btn btn-add-new" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="ri-add-circle-line"></i> 새 항목 추가
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>이름</th>
+                        <th>종류</th>
+                        <th>수량</th>
+                        <th>상태</th>
+                        <th>구매일</th>
+                        <th>소비기한</th>
+                        <th>가격</th>
+                        <th>비고</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="ri-add-circle-line"></i> 새 항목 추가</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">상품명 *</label>
+                                <input type="text" id="add_name" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">수량 *</label>
+                                <input type="number" id="add_qty" class="form-control" min="1" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">종류 *</label>
+                                <select id="add_type" class="form-select" required>
+                                    <option value="">선택</option>
+                                    <option>냉장</option>
+                                    <option>냉동</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">상태 *</label>
+                                <select id="add_status" class="form-select" required>
+                                    <option value="">선택</option>
+                                    <option>좋음</option>
+                                    <option>빨리 먹어야 함</option>
+                                    <option>폐기 예정</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">구매일 *</label>
+                                <input type="date" id="add_buy" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">소비기한 *</label>
+                                <input type="date" id="add_expire" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">가격(원) *</label>
+                                <input type="number" id="add_price" class="form-control" min="0" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">비고</label>
+                                <input type="text" id="add_note" class="form-control"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-success" onclick="addItem()">
+                        <i class="ri-save-line"></i> 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="ri-edit-2-line"></i> 항목 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="edit_id"/>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">상품명 *</label>
+                                <input type="text" id="edit_name" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">수량 *</label>
+                                <input type="number" id="edit_qty" class="form-control" min="1" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">종류 *</label>
+                                <select id="edit_type" class="form-select" required>
+                                    <option value="">선택</option>
+                                    <option>냉장</option>
+                                    <option>냉동</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">상태 *</label>
+                                <select id="edit_status" class="form-select" required>
+                                    <option value="">선택</option>
+                                    <option>좋음</option>
+                                    <option>빨리 먹어야 함</option>
+                                    <option>폐기 예정</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">구매일 *</label>
+                                <input type="date" id="edit_buy" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">소비기한 *</label>
+                                <input type="date" id="edit_expire" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">가격(원) *</label>
+                                <input type="number" id="edit_price" class="form-control" min="0" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">비고</label>
+                                <input type="text" id="edit_note" class="form-control"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="updateItem()">
+                        <i class="ri-save-line"></i> 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MockAPI.io endpoint - user로 변경
+        const API_URL = "https://6915287784e8bd126af8d6f6.mockapi.io/user";
+        const fmt = n => new Intl.NumberFormat("ko-KR").format(n);
+
+        // 페이지 로드 시 데이터 가져오기
+        $(function() {
+            getItems();
+        });
+
+        // CREATE - 항목 추가
+        function addItem() {
+            // 필수 입력 검증
+            const name = $("#add_name").val();
+            const qty = $("#add_qty").val();
+            const type = $("#add_type").val();
+            const status = $("#add_status").val();
+
+            if (!name || !type || !qty || !status) {
+                alert("이름, 종류, 수량, 상태는 필수 입력 항목입니다.");
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", API_URL);
+            xhr.setRequestHeader("content-type", "application/json");
+
+            let data = {
+                name: name,
+                qty: parseInt(qty),
+                type: type,
+                status: status,
+                buy: $("#add_buy").val(),
+                expire: $("#add_expire").val(),
+                price: parseInt($("#add_price").val()) || 0,
+                note: $("#add_note").val() || ""
+            };
+
+            xhr.send(JSON.stringify(data));
+            xhr.onload = () => {
+                if (xhr.status === 201) {
+                    const res = JSON.parse(xhr.response);
+                    alert("항목이 추가되었습니다: " + res.name);
+                    
+                    // 모달 닫기
+                    bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+                    
+                    // 폼 초기화
+                    $("#addForm")[0].reset();
+                    
+                    // 목록 새로고침
+                    getItems();
+                } else {
+                    console.log(xhr.status, xhr.statusText);
+                    alert("데이터 로드 실패");
+                }
+            }
+        }
+
+        // READ - 항목 목록 가져오기
+        function getItems() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", API_URL);
+            xhr.setRequestHeader("content-type", "application/json");
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const res = JSON.parse(xhr.response);
+                    $("#tbody").html("");
+                    
+                    if (res.length === 0) {
+                        $("#tbody").append(
+                            "<tr><td colspan='10' class='text-center text-muted py-4'>" +
+                            "<i class='ri-inbox-line' style='font-size: 3rem;'></i><br>" +
+                            "등록된 항목이 없습니다. 새 항목을 추가해주세요." +
+                            "</td></tr>"
+                        );
+                        return;
+                    }
+
+                    for (let each of res) {
+                        const statusBadge = getStatusBadge(each.status);
+                        $("#tbody").append(
+                            "<tr>" +
+                                "<td>" + each.id + "</td>" +
+                                "<td><strong>" + each.name + "</strong></td>" +
+                                "<td>" + each.type + "</td>" +
+                                "<td>" + each.qty + "</td>" +
+                                "<td><span class='badge " + statusBadge + "'>" + each.status + "</span></td>" +
+                                "<td>" + each.buy + "</td>" +
+                                "<td>" + each.expire + "</td>" +
+                                "<td>" + fmt(each.price) + "원</td>" +
+                                "<td>" + (each.note || "") + "</td>" +
+                                "<td class='text-nowrap'>" +
+                                    "<button class='btn btn-sm btn-outline-primary' onclick='loadItemForEdit(" + each.id + ")'>" +
+                                    "<i class='ri-edit-2-line'></i></button> " +
+                                    "<button class='btn btn-sm btn-outline-danger' onclick='deleteItem(" + each.id + ")'>" +
+                                    "<i class='ri-delete-bin-6-line'></i></button>" +
+                                "</td>" +
+                            "</tr>"
+                        );
+                    }
+                } else {
+                    console.log(xhr.status, xhr.statusText);
+                    alert("데이터 로드 실패");
+                }
+            }
+        }
+
+        // UPDATE - 수정할 항목 로드
+        function loadItemForEdit(id) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", API_URL + "/" + id);
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const item = JSON.parse(xhr.response);
+                    
+                    // 수정 폼에 데이터 채우기
+                    $("#edit_id").val(item.id);
+                    $("#edit_name").val(item.name);
+                    $("#edit_qty").val(item.qty);
+                    $("#edit_type").val(item.type);
+                    $("#edit_status").val(item.status);
+                    $("#edit_buy").val(item.buy);
+                    $("#edit_expire").val(item.expire);
+                    $("#edit_price").val(item.price);
+                    $("#edit_note").val(item.note);
+
+                    // 수정 모달 열기
+                    new bootstrap.Modal(document.getElementById('editModal')).show();
+                } else {
+                    console.log(xhr.status, xhr.statusText);
+                    alert("데이터 로드 실패");
+                }
+            }
+        }
+
+        // UPDATE - 항목 수정 저장
+        function updateItem() {
+            const id = $("#edit_id").val();
+            
+            // 필수 입력 검증
+            const name = $("#edit_name").val();
+            const qty = $("#edit_qty").val();
+            const type = $("#edit_type").val();
+            const status = $("#edit_status").val();
+
+            if (!name || !type || !qty || !status) {
+                alert("이름, 종류, 수량, 상태는 필수 입력 항목입니다.");
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("PUT", API_URL + "/" + id);
+            xhr.setRequestHeader("content-type", "application/json");
+
+            let data = {
+                name: name,
+                qty: parseInt(qty),
+                type: type,
+                status: status,
+                buy: $("#edit_buy").val(),
+                expire: $("#edit_expire").val(),
+                price: parseInt($("#edit_price").val()) || 0,
+                note: $("#edit_note").val() || ""
+            };
+
+            xhr.send(JSON.stringify(data));
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const res = JSON.parse(xhr.response);
+                    alert("항목이 수정되었습니다: " + res.name);
+                    
+                    // 모달 닫기
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                    
+                    // 목록 새로고침
+                    getItems();
+                } else {
+                    console.log(xhr.status, xhr.statusText);
+                    alert("수정 실패");
+                }
+            }
+        }
+
+        // DELETE - 항목 삭제
+        function deleteItem(id) {
+            if (!confirm("ID " + id + " 항목을 삭제하시겠습니까?")) {
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("DELETE", API_URL + "/" + id);
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    alert("항목이 삭제되었습니다");
+                    getItems();
+                } else {
+                    console.log(xhr.status, xhr.statusText);
+                    alert("삭제 실패");
+                }
+            }
+        }
+
+        // 상태에 따른 Badge 색상 반환
+        function getStatusBadge(status) {
+            switch(status) {
+                case "좋음": return "bg-success";
+                case "빨리 먹어야 함": return "bg-warning text-dark";
+                case "폐기 예정": return "bg-danger";
+                default: return "bg-secondary";
+            }
+        }
+    </script>
+</body>
+</html>
