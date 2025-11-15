@@ -34,7 +34,7 @@ function App() {
         throw new Error('API 응답 오류: ' + response.status);
       }
       const data = await response.json();
-     
+     setItems(data);
     } catch (error) {
       console.error('데이터 로드 실패:', error);
       setItems([]);
